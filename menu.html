@@ -1,1 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Menu — Ember & Oak</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <style>
+    /* ── MENU PAGE ── */
+    .menu-wrapper { max-width: 1200px; margin: 0 auto; padding: 6rem 4rem 8rem; }
 
+    /* Course Nav */
+    .course-nav {
+      display: flex; gap: 0; border: 1px solid var(--border);
+      margin-bottom: 4rem; overflow-x: auto;
+    }
+    .course-btn {
+      flex: 1; min-width: 120px; background: none; border: none;
+      border-right: 1px solid var(--border); padding: 1.2rem 1rem;
+      font-family: 'Jost', sans-serif; font-size: 0.72rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--muted); cursor: pointer;
+      transition: all 0.25s; white-space: nowrap;
+    }
+    .course-btn:last-child { border-right: none; }
+    .course-btn:hover { color: var(--cream); background: var(--gold-dim); }
+    .course-btn.active { color: var(--gold); background: var(--gold-dim); }
+
+    /* Menu Panel */
+    .menu-panel { display: none; animation: fadeIn 0.4s ease; }
+    .menu-panel.active { display: block; }
+
+    .menu-panel-header {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+      align-items: center; margin-bottom: 3rem; padding-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .menu-panel-header p { font-size: 0.9rem; color: var(--muted); line-height: 1.85; }
+
+    /* Items Grid */
+    .items-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5px; }
+    .item-card {
+      background: var(--surface); padding: 2rem 2.2rem;
+      border: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 1.5rem; transition: background 0.25s; cursor: default;
+    }
+    .item-card:hover { background: rgba(201,168,76,0.05); }
+    .item-info { flex: 1; }
+    .item-info h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.2rem;
+      color: var(--cream); margin-bottom: 0.35rem;
+    }
+    .item-info p { font-size: 0.83rem; color: var(--muted); line-height: 1.65; }
+    .item-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.7rem; }
+    .tag {
+      font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 0.18rem 0.5rem; border-radius: 1px;
+    }
+    .tag-veg { background: rgba(80,140,80,0.2); color: #88c488; border: 1px solid rgba(80,140,80,0.3); }
+    .tag-vegan { background: rgba(60,130,100,0.2); color: #70c4a0; border: 1px solid rgba(60,130,100,0.3); }
+    .tag-chef { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid var(--border); }
+    .tag-spicy { background: rgba(160,60,60,0.2); color: #e08888; border: 1px solid rgba(160,60,60,0.3); }
+    .tag-gf { background: rgba(140,100,60,0.2); color: #d4a870; border: 1px solid rgba(140,100,60,0.3); }
+    .item-right { text-align: right; flex-shrink: 0; }
+    .item-price {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; color: var(--gold);
+    }
+    .item-kcal { font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+
+    /* Tasting menu CTA */
+    .tasting-cta {
+      margin-top: 4rem; background: var(--surface); border: 1px solid var(--border);
+      padding: 3rem; display: flex; justify-content: space-between; align-items: center; gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .tasting-cta h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; color: var(--cream);
+    }
+    .tasting-cta p { font-size: 0.85rem; color: var(--muted); line-height: 1.7; margin-top: 0.4rem; max-width: 480px; }
+
+    /* Allergen note */
+    .allergen-note {
+      margin-top: 4rem; padding: 1.5rem 2rem; border: 1px solid var(--border);
+      background: var(--gold-dim);
+      font-size: 0.78rem; color: var(--muted); line-height: 1.7;
+    }
+    .allergen-note strong { color: var(--gold); }
+
+    @media(max-width:900px){
+      .menu-wrapper { padding: 4rem 2rem 6rem; }
+      .menu-panel-header { grid-template-columns: 1fr; gap: 1.5rem; }
+      .items-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav id="navbar">
+  <a href="home.html" class="nav-logo">Ember <span>&</span> Oak</a>
+  <ul class="nav-links">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="menu.html" class="active">Menu</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="reservations.html">Reservations</a></li>
+  </ul>
+  <a href="reservations.html" class="nav-cta">Reserve a Table</a>
+  <button class="hamburger" onclick="toggleMobile()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div id="mobile-nav">
+  <a href="home.html" onclick="closeMobile()">Home</a>
+  <a href="menu.html" class="active" onclick="closeMobile()">Menu</a>
+  <a href="about.html" onclick="closeMobile()">About</a>
+  <a href="gallery.html" onclick="closeMobile()">Gallery</a>
+  <a href="reservations.html" onclick="closeMobile()">Reservations</a>
+  <a href="reservations.html" class="nav-cta" onclick="closeMobile()">Reserve a Table</a>
+</div>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-bg"></div>
+  <div class="page-hero-line"></div>
+  <div class="page-hero-content">
+    <p class="page-hero-label">Ember & Oak</p>
+    <h1 class="page-hero-title">Our <em>Menu</em></h1>
+    <p class="page-hero-desc">Seasonal ingredients, open fire, honest craft. Our menu changes weekly — what you see today reflects the very best of right now.</p>
+  </div>
+</div>
+
+<!-- MENU BODY -->
+<div class="menu-wrapper">
+  <!-- Course Nav -->
+  <div class="course-nav">
+    <button class="course-btn active" onclick="switchCourse('starters',this)">Starters</button>
+    <button class="course-btn" onclick="switchCourse('mains',this)">Mains</button>
+    <button class="course-btn" onclick="switchCourse('sides',this)">Sides</button>
+    <button class="course-btn" onclick="switchCourse('desserts',this)">Desserts</button>
+    <button class="course-btn" onclick="switchCourse('drinks',this)">Drinks</button>
+    <button class="course-btn" onclick="switchCourse('tasting',this)">Tasting Menu</button>
+  </div>
+
+  <!-- STARTERS -->
+  <div id="course-starters" class="menu-panel active">
+    <div class="menu-panel-header reveal">
+      <div>
+        <p class="section-label">First Course</p>
+        <h2 class="section-title">Starters &<br><em>Small Plates</em></h2>
+      </div>
+      <p>Our starters are designed to awaken the palate — small, precise expressions of the season. Order one or share several between the table.</p>
+    </div>
+    <div class="items-grid">
+      <div class="item-card reveal">
+        <div class="item-info">
+          <h3>Smoked Beetroot Tartare</h3>
+          <p>Cured egg yolk, hazelnut cream, pickled mustard seeds, rye crumble</p>
+          <div class="item-tags"><span class="tag tag-veg">Vegetarian</span><span class="tag tag-gf">Gluten Free</span></div>
+        </div>
+        <div class="item-right"><div class="item-price">₹850</div><div class="item-kcal">310 kcal</div></div>
+      </div>
+      <div class="item-card reveal">
+        <div class="item-info">
+          <h3>Seared Scallop</h3>
+          <p>Cauliflower purée, smoked roe butter, caperberry, dill oil, micro herbs</p>
+          <div class="item-tags"><span class="tag tag-chef">Chef's Pick</span><span class="tag tag-gf">Gluten Free</span></div>
+        </div>
+        <div class="item-right"><div class="item-price">₹1,200</div><div class="item-kcal">240 kcal</div></div>
+      </div>
+      <div class="item-card reveal">
+        <div class="item-info">
+          <h3>Chicken Liver Parfait</h3>
+          <p>Brioche toast, Madeira jelly, shaved truffle, tarragon, cornichons</p>
+        </div>
+        <div class="item-right"><div class="item-price">₹980</div><div class="item-kcal">420 kcal</div></div>
+      </div>
+      <div class="item-card reveal">
+        <div class="item-info">
+          <h3>Wild Mushroom Broth</h3>
+          <p>Pine mushroom, black garlic, pickled walnut, chestnut foam, truffle oil</p>
+          <div class="item-tags"><span class="tag tag-vegan">Vegan</span><span class="tag tag-gf">Gluten Free</span></div>
+        </div>
+        <div class="item-right"><div class="item-price">₹720</div><div class="item-kcal">180 kcal</div></div>
+      </div>
+      <div class="item-card reveal">
+        <div class="item-info">
+          <h3>Burrata & Heritage Tomato</h3>
+          <p>Basil oil, aged balsamic, Maldon sea salt, sourdough crackers, rocket</p>
+          <div class="item-tags"><span class="tag tag-veg">Vegetarian</span></div>
+        </div>
+        <div class="item-right"><div class="item-price">₹890</div><div class="item-kcal">360 kcal</div></div>
+      </div>
+      <div class="item-card reveal">
+        <div class="item-info">
+          <h3>Yellowfin Tuna Crudo</h3>
+          <p>Yuzu dressing, cucumber, sesame, micro shiso, avocado, ponzu</p>
+          <div class="item-tags"><span class="tag tag-gf">Gluten Free</span></div>
+        </div>
+        <div class="item-right"><div class="item-price">₹1,100</div><div class="item-kcal">280 kcal</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAINS -->
+  <div id="course-mains" class="menu-panel">
+    <div class="menu-panel-header reveal">
+      <div>
+        <p class="section-label">Second Course</p>
+        <h2 class="section-title">Main <em>Courses</em></h2>
+      </div>
+      <p>Every main course passes through our open-fire hearths. We use whole animals sourced from named farms, and every cut is cooked to order over oak and cherry wood.</p>
+    </div>
+    <div class="items-grid">
+      <div class="item-card reveal">
+        <div class="item-info">
+          <h3>45-Day Dry-Aged Ribeye</h3>
+          <p>Bone marrow butter, roasted shallot, hand-cut chips, béarnaise sauce</p>
+          <div class="item-tags"><span class="tag tag-chef">Chef's Signature</span><span class="tag tag-gf">Gluten Free</span></div>
+        </div>
+        <div class="item-right"><div class="item-price">₹3,200</div><div class="item-kcal">780 kcal</div></div>
+      </div>
+      <div class="item-card reveal">
+        <div class="item-info">
+          <h3>Roast Duck Breast</h3>
+          <p>Plum jus, pickled cherries, celeriac gratin, watercress salad</p>
+          <div class="item-tags"><span class="tag tag-gf">Gluten Free</span></div>
+        </div>
+        <div class="item-right"><div class="item-price">₹2,400</div><div class="item-kcal">610 kcal</div></div>
+      </div>
+      <div class="item-card reveal">
+        <div class="item-info">
+          <h3>Halibut en Papillote</h3>
+          <p>Fennel, saffron nage, samphire, grilled lemon, herb oil</p>
+          <div class="item-tags"><span class="tag tag-gf">Gluten Free</span></div>
+        </div>
+        <div class="item-right"><div class="item-price">₹2,800</div><div class="item-kcal">520 kcal</div></div>
+      </div>
+      <div class="item-card reveal">
+        <div class="item-info">
+          <h3>Fire-Roasted Cauliflower</h3>
+          <p>Romesco, smoked almonds, raisin purée, herb gremolata</p>
+          <div class="item-tags"><span class="tag tag-vegan">Vegan</span><span class="tag tag-gf">Gluten Free</span></div>
+        </div>
+        <div class="item-right"><div class="item-price">₹1,600</div><div class="item-kcal">420 kcal</div></div>
+      </div>
+      <div class="item-card reveal">
+        <div class="item-info">
+          <h3>Braised Lamb Shoulder</h3>
+          <p>Salsa verde, pommes purée, spring onion, anchovy gremolata, jus</p>
+          <div class="item-tags"><span class="tag tag-chef">Seasonal</span></div>
+        </div>
+        <div class="item-right"><div class="item-price">₹2,600</div><div class="item-kcal">690 kcal</div></div>
+      </div>
+      <div class="item-card reveal">
+        <div class="item-info">
+          <h3>Ricotta Gnocchi</h3>
+          <p>Sage brown butter, toasted pine nuts, pecorino, wild rocket, lemon</p>
+          <div class="item-tags"><span class="tag tag-veg">Vegetarian</span></div>
+        </div>
+        <div class="item-right"><div class="item-price">₹1,850</div><div class="item-kcal">540 kcal</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDES -->
+  <div id="course-sides" class="menu-panel">
+    <div class="menu-panel-header reveal">
+      <div>
+        <p class="section-label">Accompaniments</p>
+        <h2 class="section-title"><em>Sides</em> &<br>Extras</h2>
+      </div>
+      <p>Designed to complement our mains, each side is a dish in its own right — never an afterthought.</p>
+    </div>
+    <div class="items-grid">
+      <div class="item-card reveal"><div class="item-info"><h3>Truffle & Parmesan Fries</h3><p>Hand-cut, double-fried, shaved parmesan, truffle oil, chives</p><div class="item-tags"><span class="tag tag-veg">Vegetarian</span></div></div><div class="item-right"><div class="item-price">₹580</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>Creamed Spinach</h3><p>Nutmeg, double cream, toasted garlic, black pepper</p><div class="item-tags"><span class="tag tag-veg">Vegetarian</span><span class="tag tag-gf">GF</span></div></div><div class="item-right"><div class="item-price">₹420</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>Pommes Purée</h3><p>Robuchon-style, 50% butter, sea salt, chives</p><div class="item-tags"><span class="tag tag-veg">Vegetarian</span><span class="tag tag-gf">GF</span></div></div><div class="item-right"><div class="item-price">₹460</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>Charred Broccoli</h3><p>Tahini, lemon, chilli flakes, toasted sesame</p><div class="item-tags"><span class="tag tag-vegan">Vegan</span><span class="tag tag-gf">GF</span></div></div><div class="item-right"><div class="item-price">₹380</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>Heritage Carrots</h3><p>Honey, thyme, brown butter glaze, toasted cumin</p><div class="item-tags"><span class="tag tag-veg">Vegetarian</span><span class="tag tag-gf">GF</span></div></div><div class="item-right"><div class="item-price">₹360</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>Sourdough & Cultured Butter</h3><p>House-baked, whipped cultured butter, smoked salt flakes</p><div class="item-tags"><span class="tag tag-veg">Vegetarian</span></div></div><div class="item-right"><div class="item-price">₹320</div></div></div>
+    </div>
+  </div>
+
+  <!-- DESSERTS -->
+  <div id="course-desserts" class="menu-panel">
+    <div class="menu-panel-header reveal">
+      <div>
+        <p class="section-label">Final Course</p>
+        <h2 class="section-title">Desserts &<br><em>Petit Fours</em></h2>
+      </div>
+      <p>Our pastry kitchen is led by a dedicated team who believe that the final course deserves the same intensity as the first. All ice creams and sorbets are churned daily on-site.</p>
+    </div>
+    <div class="items-grid">
+      <div class="item-card reveal"><div class="item-info"><h3>Valrhona Chocolate Fondant</h3><p>Salted caramel core, vanilla bean ice cream, handmade tuile, gold dust</p><div class="item-tags"><span class="tag tag-veg">Vegetarian</span><span class="tag tag-chef">Chef's Pick</span></div></div><div class="item-right"><div class="item-price">₹680</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>Seasonal Tart Tatin</h3><p>Served warm with crème fraîche, calvados glaze — changes with season</p><div class="item-tags"><span class="tag tag-veg">Vegetarian</span></div></div><div class="item-right"><div class="item-price">₹620</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>Honey & Thyme Panna Cotta</h3><p>Poached pear, walnut praline, lemon verbena, tuile</p><div class="item-tags"><span class="tag tag-veg">Vegetarian</span><span class="tag tag-gf">GF</span></div></div><div class="item-right"><div class="item-price">₹580</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>Cheese Selection</h3><p>Three artisan cheeses, quince, walnuts, seasonal crackers, pickles</p><div class="item-tags"><span class="tag tag-veg">Vegetarian</span></div></div><div class="item-right"><div class="item-price">₹950</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>Lemon Tart</h3><p>Scorched Italian meringue, candied zest, raspberry coulis</p><div class="item-tags"><span class="tag tag-veg">Vegetarian</span></div></div><div class="item-right"><div class="item-price">₹540</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>Petit Fours Selection</h3><p>Seasonal truffles, madeleines, salted caramels — changes daily</p><div class="item-tags"><span class="tag tag-veg">Vegetarian</span></div></div><div class="item-right"><div class="item-price">₹440</div></div></div>
+    </div>
+  </div>
+
+  <!-- DRINKS -->
+  <div id="course-drinks" class="menu-panel">
+    <div class="menu-panel-header reveal">
+      <div>
+        <p class="section-label">Cellar & Bar</p>
+        <h2 class="section-title">Wines, Cocktails<br><em>& More</em></h2>
+      </div>
+      <p>Our drinks programme spans a 300-label cellar, a seasonal cocktail list, and an ambitious non-alcoholic pairing menu — each crafted with the same rigour as the food.</p>
+    </div>
+    <div class="items-grid">
+      <div class="item-card reveal"><div class="item-info"><h3>Ember Old Fashioned</h3><p>Smoked bourbon, black walnut bitters, orange zest, demerara</p><div class="item-tags"><span class="tag tag-chef">Signature</span></div></div><div class="item-right"><div class="item-price">₹780</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>Garden Gimlet</h3><p>Cucumber gin, fresh lime, basil cordial, premium tonic water</p></div><div class="item-right"><div class="item-price">₹720</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>Barossa Valley Shiraz</h3><p>Full-bodied, dark fruit, cedar, black pepper · 2019 Vintage · 150ml</p></div><div class="item-right"><div class="item-price">₹1,100</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>White Burgundy</h3><p>Puligny-Montrachet, mineral, stone fruit, toasted oak · 2021 · 150ml</p></div><div class="item-right"><div class="item-price">₹1,400</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>Champagne by the Glass</h3><p>Blanc de blancs, brioche, fine mousse, citrus · 125ml</p></div><div class="item-right"><div class="item-price">₹1,600</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>Non-Alcoholic Pairing</h3><p>Three-course pressed juice, herbal infusion & sparkling elderflower</p><div class="item-tags"><span class="tag tag-vegan">Vegan</span></div></div><div class="item-right"><div class="item-price">₹880</div></div></div>
+    </div>
+  </div>
+
+  <!-- TASTING MENU -->
+  <div id="course-tasting" class="menu-panel">
+    <div class="menu-panel-header reveal">
+      <div>
+        <p class="section-label">The Full Experience</p>
+        <h2 class="section-title">Tasting <em>Menu</em></h2>
+      </div>
+      <p>Seven courses that tell the story of our kitchen — from the first amuse-bouche to the final petit four. Available Tuesday through Saturday, dinner service only. Wine pairing available.</p>
+    </div>
+    <div class="items-grid">
+      <div class="item-card reveal"><div class="item-info"><h3>1. Amuse-Bouche</h3><p>A bite-sized expression of the day's theme — changes with the kitchen's mood</p></div><div class="item-right"><div class="item-price">—</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>2. First Course</h3><p>Smoked beetroot tartare with cured yolk and rye</p></div><div class="item-right"><div class="item-price">—</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>3. Fish</h3><p>Seared scallop, cauliflower purée, smoked roe butter</p></div><div class="item-right"><div class="item-price">—</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>4. Sorbet Interlude</h3><p>Seasonal palate cleanser — herb or citrus</p></div><div class="item-right"><div class="item-price">—</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>5. Main</h3><p>Dry-aged ribeye or fire-roasted cauliflower (choice)</p></div><div class="item-right"><div class="item-price">—</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>6. Cheese or Pre-Dessert</h3><p>Artisan selection or honey panna cotta</p></div><div class="item-right"><div class="item-price">—</div></div></div>
+      <div class="item-card reveal"><div class="item-info"><h3>7. Dessert & Petit Fours</h3><p>Valrhona fondant and handmade petit fours</p></div><div class="item-right"><div class="item-price">—</div></div></div>
+    </div>
+    <div class="tasting-cta reveal">
+      <div>
+        <h3>7-Course Tasting Menu</h3>
+        <p>Per person, inclusive of all courses. Optional wine pairing (₹3,200 per person) and non-alcoholic pairing (₹1,600 per person) available.</p>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:2.5rem;color:var(--gold);line-height:1">₹6,500</div>
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:0.2rem">per person</div>
+        <a href="reservations.html" class="btn-primary" style="margin-top:1rem;display:inline-block">Book Tasting Menu</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Allergen note -->
+  <div class="allergen-note reveal">
+    <strong>Allergen Information:</strong> Please inform us of any dietary requirements or allergies when booking. Our kitchen handles nuts, gluten, dairy, shellfish, and eggs. Full allergen information available on request. All prices are inclusive of GST. Menu items are subject to seasonal availability.
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="home.html" class="nav-logo">Ember <span>&</span> Oak</a>
+      <p>A celebration of fire, craft, and seasonal abundance.</p>
+    </div>
+    <div class="footer-col"><h4>Navigate</h4><ul><li><a href="home.html">Home</a></li><li><a href="menu.html">Menu</a></li><li><a href="about.html">About Us</a></li><li><a href="gallery.html">Gallery</a></li><li><a href="reservations.html">Reservations</a></li></ul></div>
+    <div class="footer-col"><h4>Dining</h4><ul><li><a href="#">Tasting Menu</a></li><li><a href="#">Private Events</a></li><li><a href="#">Wine Pairings</a></li><li><a href="#">Gift Vouchers</a></li></ul></div>
+    <div class="footer-col"><h4>Contact</h4><ul><li><a href="#">+91 40 2345 6789</a></li><li><a href="#">hello@emberandoak.in</a></li><li><a href="#">12 Jubilee Hills Road, Hyderabad</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Ember & Oak. All rights reserved.</p>
+    <div class="social-links"><a href="#">Instagram</a><a href="#">Facebook</a><a href="#">Zomato</a></div>
+  </div>
+</footer>
+
+<script src="shared.js"></script>
+<script>
+  function switchCourse(name, btn) {
+    document.querySelectorAll('.course-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.menu-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('course-' + name).classList.add('active');
+    // Re-trigger reveal animations for new panel
+    setTimeout(() => {
+      document.querySelectorAll('#course-' + name + ' .reveal').forEach(el => {
+        el.classList.remove('visible');
+        setTimeout(() => el.classList.add('visible'), 50);
+      });
+    }, 10);
+  }
+</script>
+</body>
+</html>
