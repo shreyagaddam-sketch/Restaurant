@@ -1,1 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reservations — Ember & Oak</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <style>
+    .res-wrapper {
+      display: grid; grid-template-columns: 1fr 1.1fr; gap: 0;
+      max-width: 1200px; margin: 0 auto; padding: 5rem 4rem 8rem;
+    }
 
+    /* LEFT: info */
+    .res-info { padding-right: 5rem; }
+    .res-info .section-title { margin-bottom: 0; }
+    .res-info > p { font-size: 0.9rem; color: var(--muted); line-height: 1.9; margin: 1.5rem 0 2.5rem; }
+
+    .info-cards { display: flex; flex-direction: column; gap: 1px; margin-bottom: 3rem; }
+    .info-card {
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 1.6rem 1.8rem; display: flex; gap: 1.2rem; align-items: flex-start;
+      transition: background 0.25s;
+    }
+    .info-card:hover { background: var(--gold-dim); }
+    .info-card-icon { font-size: 1.4rem; margin-top: 0.1rem; flex-shrink: 0; }
+    .info-card h4 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.05rem;
+      color: var(--cream); margin-bottom: 0.25rem;
+    }
+    .info-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+    .res-policies h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.2rem;
+      color: var(--cream); margin-bottom: 1rem;
+    }
+    .res-policies ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+    .res-policies li {
+      font-size: 0.82rem; color: var(--muted); padding-left: 1.2rem; position: relative; line-height: 1.6;
+    }
+    .res-policies li::before {
+      content: '—'; position: absolute; left: 0; color: var(--gold); font-size: 0.7rem;
+    }
+
+    /* RIGHT: form */
+    .res-form-wrap {
+      background: var(--surface); border: 1px solid var(--border); padding: 3.5rem;
+    }
+    .form-title {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.6rem;
+      color: var(--cream); margin-bottom: 2rem;
+    }
+    .form-title em { font-style: italic; color: var(--gold-light); }
+
+    /* Steps indicator */
+    .steps {
+      display: flex; gap: 0; margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border); padding-bottom: 1.5rem;
+    }
+    .step {
+      flex: 1; text-align: center; position: relative;
+    }
+    .step-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1px solid var(--border); background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; color: var(--muted); margin: 0 auto 0.5rem;
+      transition: all 0.3s;
+    }
+    .step.active .step-num { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+    .step.done .step-num { background: var(--gold-dim); color: var(--gold); border-color: var(--gold); }
+    .step-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+    .step.active .step-label { color: var(--gold); }
+
+    /* Form fields */
+    .form-step { display: none; }
+    .form-step.active { display: block; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .fg-full { grid-column: 1 / -1; }
+
+    .form-group { display: flex; flex-direction: column; gap: 0.45rem; }
+    .form-group label {
+      font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); padding: 0.85rem 1rem;
+      font-family: 'Jost', sans-serif; font-size: 0.88rem; font-weight: 300;
+      outline: none; transition: border-color 0.25s; width: 100%;
+      -webkit-appearance: none; appearance: none;
+    }
+    .form-group select option { background: #0d0b08; }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--gold); }
+    .form-group textarea { resize: vertical; min-height: 90px; }
+
+    /* Radio group */
+    .radio-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .radio-label {
+      cursor: pointer; padding: 0.6rem 1rem;
+      border: 1px solid var(--border); background: var(--bg);
+      font-size: 0.75rem; letter-spacing: 0.08em; color: var(--muted);
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .radio-label input { display: none; }
+    .radio-label:has(input:checked),
+    .radio-label.selected { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+    /* Form nav */
+    .form-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; gap: 1rem; }
+    .form-nav button {
+      font-family: 'Jost', sans-serif; font-size: 0.75rem; letter-spacing: 0.16em;
+      text-transform: uppercase; cursor: pointer; padding: 0.85rem 1.8rem;
+      transition: all 0.25s; border: none;
+    }
+    .btn-next { background: var(--gold); color: var(--bg); }
+    .btn-next:hover { background: var(--gold-light); }
+    .btn-back { background: none; border: 1px solid var(--border) !important; color: var(--muted); }
+    .btn-back:hover { border-color: var(--cream) !important; color: var(--cream); }
+    .btn-submit { background: var(--gold); color: var(--bg); width: 100%; margin-top: 1.5rem; padding: 1.1rem; font-size: 0.8rem; letter-spacing: 0.2em; }
+    .btn-submit:hover { background: var(--gold-light); }
+
+    /* Summary step */
+    .summary-block { margin-bottom: 1.5rem; }
+    .summary-block h4 {
+      font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 0.6rem;
+    }
+    .summary-row {
+      display: flex; justify-content: space-between; padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border-soft); font-size: 0.85rem;
+    }
+    .summary-row span:first-child { color: var(--muted); }
+    .summary-row span:last-child { color: var(--cream); }
+
+    /* Success */
+    .success-state {
+      display: none; text-align: center; padding: 3rem 0;
+    }
+    .success-state.show { display: block; }
+    .success-icon { font-size: 3rem; margin-bottom: 1.5rem; }
+    .success-state h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--cream); margin-bottom: 0.8rem;
+    }
+    .success-state p { font-size: 0.88rem; color: var(--muted); line-height: 1.8; margin-bottom: 2rem; }
+
+    @media(max-width:960px){
+      .res-wrapper { grid-template-columns: 1fr; padding: 4rem 2rem 6rem; gap: 3rem; }
+      .res-info { padding-right: 0; }
+      .form-grid { grid-template-columns: 1fr; }
+      .fg-full { grid-column: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<nav id="navbar">
+  <a href="home.html" class="nav-logo">Ember <span>&</span> Oak</a>
+  <ul class="nav-links">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="menu.html">Menu</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="reservations.html" class="active">Reservations</a></li>
+  </ul>
+  <a href="reservations.html" class="nav-cta">Reserve a Table</a>
+  <button class="hamburger" onclick="toggleMobile()" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div id="mobile-nav">
+  <a href="home.html" onclick="closeMobile()">Home</a>
+  <a href="menu.html" onclick="closeMobile()">Menu</a>
+  <a href="about.html" onclick="closeMobile()">About</a>
+  <a href="gallery.html" onclick="closeMobile()">Gallery</a>
+  <a href="reservations.html" class="active" onclick="closeMobile()">Reservations</a>
+  <a href="reservations.html" class="nav-cta" onclick="closeMobile()">Reserve a Table</a>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-bg"></div>
+  <div class="page-hero-line"></div>
+  <div class="page-hero-content">
+    <p class="page-hero-label">Ember & Oak</p>
+    <h1 class="page-hero-title">Reserve <em>a Table</em></h1>
+    <p class="page-hero-desc">We look forward to welcoming you. Booking takes less than two minutes.</p>
+  </div>
+</div>
+
+<div class="res-wrapper">
+
+  <!-- INFO SIDE -->
+  <div class="res-info reveal">
+    <p class="section-label">Visit Us</p>
+    <h2 class="section-title">Plan Your <em>Visit</em></h2>
+    <div class="divider"></div>
+    <p>We recommend booking at least 48 hours in advance, particularly for weekend dinners. Walk-ins are welcome subject to availability at the bar.</p>
+
+    <div class="info-cards">
+      <div class="info-card">
+        <span class="info-card-icon">📍</span>
+        <div><h4>Location</h4><p>12 Jubilee Hills Road, Hyderabad<br>Telangana 500033 · Near Road No. 36</p></div>
+      </div>
+      <div class="info-card">
+        <span class="info-card-icon">🕐</span>
+        <div>
+          <h4>Opening Hours</h4>
+          <p>Tuesday – Sunday<br>
+          Lunch: 12:00 PM – 3:00 PM<br>
+          Dinner: 7:00 PM – 11:00 PM<br>
+          <em style="color:var(--gold);font-style:normal">Closed Mondays</em></p>
+        </div>
+      </div>
+      <div class="info-card">
+        <span class="info-card-icon">📞</span>
+        <div><h4>Phone & Email</h4><p>+91 40 2345 6789<br>hello@emberandoak.in</p></div>
+      </div>
+      <div class="info-card">
+        <span class="info-card-icon">🚗</span>
+        <div><h4>Parking & Access</h4><p>Complimentary valet parking available all evenings. Fully wheelchair accessible entrance on the south side of the building.</p></div>
+      </div>
+    </div>
+
+    <div class="res-policies">
+      <h3>Reservation Policies</h3>
+      <ul>
+        <li>Reservations are held for 15 minutes from the booked time</li>
+        <li>Cancellations must be made at least 24 hours in advance</li>
+        <li>For parties of 8 or more, please call us directly</li>
+        <li>Children are welcome; high chairs available on request</li>
+        <li>Smart casual dress code applies for dinner service</li>
+        <li>Full pre-payment required for the tasting menu</li>
+        <li>A confirmation email will be sent within 2 hours of booking</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- FORM SIDE -->
+  <div class="res-form-wrap reveal">
+    <h2 class="form-title">Make a <em>Reservation</em></h2>
+
+    <!-- Steps -->
+    <div class="steps">
+      <div class="step active" id="step-ind-1">
+        <div class="step-num">1</div>
+        <div class="step-label">Details</div>
+      </div>
+      <div class="step" id="step-ind-2">
+        <div class="step-num">2</div>
+        <div class="step-label">Preferences</div>
+      </div>
+      <div class="step" id="step-ind-3">
+        <div class="step-num">3</div>
+        <div class="step-label">Confirm</div>
+      </div>
+    </div>
+
+    <!-- Form steps -->
+    <div id="form-step-1" class="form-step active">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>First Name *</label>
+          <input type="text" id="f-fname" placeholder="First name" required/>
+        </div>
+        <div class="form-group">
+          <label>Last Name *</label>
+          <input type="text" id="f-lname" placeholder="Last name" required/>
+        </div>
+        <div class="form-group">
+          <label>Email Address *</label>
+          <input type="email" id="f-email" placeholder="you@email.com" required/>
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" id="f-phone" placeholder="+91 98765 43210"/>
+        </div>
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" id="f-date" required/>
+        </div>
+        <div class="form-group">
+          <label>Service *</label>
+          <select id="f-service" required>
+            <option value="">Select service</option>
+            <option>Lunch (12:00 – 3:00 PM)</option>
+            <option>Dinner (7:00 – 11:00 PM)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Preferred Time *</label>
+          <select id="f-time" required>
+            <option value="">Select time</option>
+            <option>12:00 PM</option><option>12:30 PM</option><option>1:00 PM</option><option>1:30 PM</option><option>2:00 PM</option>
+            <option>7:00 PM</option><option>7:30 PM</option><option>8:00 PM</option><option>8:30 PM</option><option>9:00 PM</option><option>9:30 PM</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Number of Guests *</label>
+          <select id="f-guests" required>
+            <option value="">Select guests</option>
+            <option>1 Guest</option><option>2 Guests</option><option>3 Guests</option><option>4 Guests</option>
+            <option>5 Guests</option><option>6 Guests</option><option>7 Guests</option><option>8+ (call us)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-nav" style="justify-content:flex-end">
+        <button class="btn-next" onclick="goStep(2)">Continue →</button>
+      </div>
+    </div>
+
+    <div id="form-step-2" class="form-step">
+      <div class="form-grid">
+        <div class="form-group fg-full">
+          <label>Occasion</label>
+          <div class="radio-group" id="rg-occasion">
+            <label class="radio-label"><input type="radio" name="occasion" value="none" checked> No Occasion</label>
+            <label class="radio-label"><input type="radio" name="occasion" value="birthday"> Birthday</label>
+            <label class="radio-label"><input type="radio" name="occasion" value="anniversary"> Anniversary</label>
+            <label class="radio-label"><input type="radio" name="occasion" value="proposal"> Proposal</label>
+            <label class="radio-label"><input type="radio" name="occasion" value="business"> Business</label>
+            <label class="radio-label"><input type="radio" name="occasion" value="other"> Other</label>
+          </div>
+        </div>
+        <div class="form-group fg-full">
+          <label>Dietary Requirements</label>
+          <div class="radio-group" id="rg-dietary">
+            <label class="radio-label"><input type="radio" name="dietary" value="none" checked> None</label>
+            <label class="radio-label"><input type="radio" name="dietary" value="veg"> Vegetarian</label>
+            <label class="radio-label"><input type="radio" name="dietary" value="vegan"> Vegan</label>
+            <label class="radio-label"><input type="radio" name="dietary" value="gf"> Gluten Free</label>
+            <label class="radio-label"><input type="radio" name="dietary" value="nut"> Nut Allergy</label>
+            <label class="radio-label"><input type="radio" name="dietary" value="dairy"> Dairy Free</label>
+          </div>
+        </div>
+        <div class="form-group fg-full">
+          <label>Seating Preference</label>
+          <div class="radio-group" id="rg-seating">
+            <label class="radio-label"><input type="radio" name="seating" value="none" checked> No Preference</label>
+            <label class="radio-label"><input type="radio" name="seating" value="window"> Window</label>
+            <label class="radio-label"><input type="radio" name="seating" value="quiet"> Quiet Corner</label>
+            <label class="radio-label"><input type="radio" name="seating" value="bar"> Near Bar</label>
+            <label class="radio-label"><input type="radio" name="seating" value="private"> Private Room</label>
+          </div>
+        </div>
+        <div class="form-group fg-full">
+          <label>Additional Notes</label>
+          <textarea id="f-notes" placeholder="Accessibility needs, high chairs, food allergies in detail, special setup requests..."></textarea>
+        </div>
+      </div>
+      <div class="form-nav">
+        <button class="btn-back" onclick="goStep(1)">← Back</button>
+        <button class="btn-next" onclick="goStep(3)">Review →</button>
+      </div>
+    </div>
+
+    <div id="form-step-3" class="form-step">
+      <div class="summary-block">
+        <h4>Booking Details</h4>
+        <div class="summary-row"><span>Name</span><span id="s-name">—</span></div>
+        <div class="summary-row"><span>Email</span><span id="s-email">—</span></div>
+        <div class="summary-row"><span>Phone</span><span id="s-phone">—</span></div>
+        <div class="summary-row"><span>Date</span><span id="s-date">—</span></div>
+        <div class="summary-row"><span>Time</span><span id="s-time">—</span></div>
+        <div class="summary-row"><span>Guests</span><span id="s-guests">—</span></div>
+      </div>
+      <div class="summary-block">
+        <h4>Preferences</h4>
+        <div class="summary-row"><span>Occasion</span><span id="s-occasion">—</span></div>
+        <div class="summary-row"><span>Dietary</span><span id="s-dietary">—</span></div>
+        <div class="summary-row"><span>Seating</span><span id="s-seating">—</span></div>
+      </div>
+      <div style="padding:1rem;background:var(--gold-dim);border:1px solid var(--border);font-size:0.78rem;color:var(--muted);line-height:1.7">
+        A confirmation will be sent to your email within 2 hours. If you need to cancel, please do so at least 24 hours before your booking.
+      </div>
+      <button class="btn-submit" onclick="submitForm()">Confirm Reservation</button>
+      <div class="form-nav" style="margin-top:1rem;justify-content:flex-start">
+        <button class="btn-back" onclick="goStep(2)">← Edit Preferences</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div id="success-state" class="success-state">
+      <div class="success-icon">✓</div>
+      <h3>Reservation Confirmed!</h3>
+      <p>Thank you — we've received your booking and a confirmation has been sent to your email. We look forward to welcoming you to Ember & Oak.</p>
+      <a href="menu.html" class="btn-primary">Browse Our Menu</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand"><a href="home.html" class="nav-logo">Ember <span>&</span> Oak</a><p>A celebration of fire, craft, and seasonal abundance.</p></div>
+    <div class="footer-col"><h4>Navigate</h4><ul><li><a href="home.html">Home</a></li><li><a href="menu.html">Menu</a></li><li><a href="about.html">About Us</a></li><li><a href="gallery.html">Gallery</a></li><li><a href="reservations.html">Reservations</a></li></ul></div>
+    <div class="footer-col"><h4>Dining</h4><ul><li><a href="#">Tasting Menu</a></li><li><a href="#">Private Events</a></li><li><a href="#">Wine Pairings</a></li><li><a href="#">Gift Vouchers</a></li></ul></div>
+    <div class="footer-col"><h4>Contact</h4><ul><li><a href="#">+91 40 2345 6789</a></li><li><a href="#">hello@emberandoak.in</a></li><li><a href="#">12 Jubilee Hills Road, Hyderabad</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Ember & Oak. All rights reserved.</p>
+    <div class="social-links"><a href="#">Instagram</a><a href="#">Facebook</a><a href="#">Zomato</a></div>
+  </div>
+</footer>
+
+<script src="shared.js"></script>
+<script>
+  // Set min date
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('f-date').setAttribute('min', today);
+
+  let currentStep = 1;
+
+  function goStep(n) {
+    // Validate step 1
+    if (n > 1 && currentStep === 1) {
+      const fname = document.getElementById('f-fname').value;
+      const email = document.getElementById('f-email').value;
+      const date  = document.getElementById('f-date').value;
+      const time  = document.getElementById('f-time').value;
+      const guests = document.getElementById('f-guests').value;
+      if (!fname || !email || !date || !time || !guests) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+    }
+
+    if (n === 3) buildSummary();
+
+    document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+    document.getElementById('form-step-' + n).classList.add('active');
+
+    for (let i = 1; i <= 3; i++) {
+      const ind = document.getElementById('step-ind-' + i);
+      ind.classList.remove('active','done');
+      if (i < n) ind.classList.add('done');
+      else if (i === n) ind.classList.add('active');
+    }
+    currentStep = n;
+  }
+
+  function buildSummary() {
+    const fname = document.getElementById('f-fname').value;
+    const lname = document.getElementById('f-lname').value;
+    document.getElementById('s-name').textContent    = fname + ' ' + lname;
+    document.getElementById('s-email').textContent   = document.getElementById('f-email').value || '—';
+    document.getElementById('s-phone').textContent   = document.getElementById('f-phone').value || '—';
+    document.getElementById('s-date').textContent    = document.getElementById('f-date').value || '—';
+    document.getElementById('s-time').textContent    = document.getElementById('f-time').value || '—';
+    document.getElementById('s-guests').textContent  = document.getElementById('f-guests').value || '—';
+    const occ = document.querySelector('input[name="occasion"]:checked');
+    const diet = document.querySelector('input[name="dietary"]:checked');
+    const seat = document.querySelector('input[name="seating"]:checked');
+    document.getElementById('s-occasion').textContent = occ ? occ.value : '—';
+    document.getElementById('s-dietary').textContent  = diet ? diet.value : '—';
+    document.getElementById('s-seating').textContent  = seat ? seat.value : '—';
+  }
+
+  function submitForm() {
+    document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+    document.getElementById('success-state').classList.add('show');
+    document.querySelectorAll('.step').forEach(s => s.classList.add('done'));
+  }
+</script>
+</body>
+</html>
