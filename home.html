@@ -1,1 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ember & Oak — Fine Dining</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <style>
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      text-align: center; padding: 0 2rem; position: relative; overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 40%, rgba(139,46,46,0.2) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 15% 80%, rgba(201,168,76,0.1) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 85% 20%, rgba(201,168,76,0.07) 0%, transparent 50%),
+        linear-gradient(160deg, #0d0b08 0%, #1c1408 50%, #0d0b08 100%);
+    }
+    .hero-vert-line {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 1px; height: 55%;
+      background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+      opacity: 0.12; animation: pulse 4s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:0.08} 50%{opacity:0.2} }
 
+    .hero-content { position: relative; z-index: 2; }
+    .hero-eyebrow {
+      font-size: 0.68rem; letter-spacing: 0.42em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 2rem;
+      animation: fadeUp 1s 0.2s ease both;
+    }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(4rem, 10vw, 9.5rem); font-weight: 300;
+      line-height: 0.88; color: var(--cream);
+      animation: fadeUp 1s 0.38s ease both;
+    }
+    .hero-title em { font-style: italic; color: var(--gold-light); display: block; }
+    .hero-rule {
+      width: 1px; height: 60px; background: var(--gold); opacity: 0.4;
+      margin: 2rem auto;
+      animation: fadeIn 1s 0.55s ease both;
+    }
+    .hero-sub {
+      font-size: 1rem; color: var(--muted); max-width: 440px; margin: 0 auto 3rem;
+      line-height: 1.8; animation: fadeUp 1s 0.6s ease both;
+    }
+    .hero-btns {
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+      animation: fadeUp 1s 0.75s ease both;
+    }
+    .hero-scroll {
+      position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      color: var(--muted); font-size: 0.62rem; letter-spacing: 0.28em; text-transform: uppercase;
+    }
+    .hero-scroll::after {
+      content: ''; width: 1px; height: 44px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: scrollLine 1.8s ease-in-out infinite;
+    }
+    @keyframes scrollLine {
+      0%{opacity:0;transform:scaleY(0);transform-origin:top}
+      50%{opacity:1;transform:scaleY(1)}
+      100%{opacity:0}
+    }
+
+    /* ── INTRO STRIP ── */
+    .intro-strip {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    }
+    .intro-block {
+      padding: 3rem 2.5rem; text-align: center;
+      border-right: 1px solid var(--border);
+    }
+    .intro-block:last-child { border-right: none; }
+    .intro-num {
+      font-family: 'Cormorant Garamond', serif; font-size: 3.5rem;
+      font-weight: 300; color: var(--gold); line-height: 1;
+    }
+    .intro-block p { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 0.4rem; }
+
+    /* ── STORY ── */
+    .story-section {
+      max-width: 1200px; margin: 0 auto; padding: 8rem 4rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center;
+    }
+    .story-visual {
+      position: relative; height: 520px;
+    }
+    .story-box {
+      position: absolute; background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; font-size: 3rem;
+    }
+    .story-box-main { inset: 0 80px 80px 0; }
+    .story-box-accent { bottom: 0; right: 0; width: 200px; height: 200px; background: var(--gold-dim); border-color: var(--gold); }
+    .story-badge {
+      position: absolute; top: 50%; left: -24px; transform: translateY(-50%);
+      background: var(--gold); color: var(--bg);
+      padding: 1rem 1.2rem; text-align: center;
+      font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600;
+    }
+    .story-badge strong { display: block; font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; }
+    .story-text p { font-size: 0.95rem; color: var(--muted); line-height: 1.9; margin-bottom: 1rem; }
+
+    /* ── SIGNATURE DISHES ── */
+    .signature-section { background: var(--surface); border-top: 1px solid var(--border); padding: 8rem 4rem; }
+    .signature-inner { max-width: 1200px; margin: 0 auto; }
+    .sig-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3.5rem; flex-wrap: wrap; gap: 1rem; }
+    .sig-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5px; }
+    .sig-card {
+      background: var(--bg); padding: 2.8rem 2.2rem;
+      border: 1px solid var(--border); position: relative; overflow: hidden;
+      transition: all 0.35s;
+    }
+    .sig-card::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform 0.4s;
+    }
+    .sig-card:hover { background: rgba(201,168,76,0.04); transform: translateY(-5px); }
+    .sig-card:hover::after { transform: scaleX(1); }
+    .sig-num {
+      font-family: 'Cormorant Garamond', serif; font-size: 3.5rem;
+      color: rgba(201,168,76,0.12); font-weight: 300; line-height: 1;
+      margin-bottom: 1rem;
+    }
+    .sig-card h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.5rem;
+      color: var(--cream); margin-bottom: 0.5rem;
+    }
+    .sig-card p { font-size: 0.84rem; color: var(--muted); line-height: 1.7; }
+    .sig-tag {
+      display: inline-block; margin-top: 1.2rem;
+      font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--gold); border: 1px solid var(--border); padding: 0.25rem 0.6rem;
+    }
+
+    /* ── EXPERIENCE ── */
+    .exp-section { max-width: 1200px; margin: 0 auto; padding: 8rem 4rem; }
+    .exp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5px; margin-top: 3.5rem; }
+    .exp-item {
+      background: var(--surface); padding: 3rem 2.5rem;
+      border: 1px solid var(--border); display: flex; gap: 1.5rem; align-items: flex-start;
+      transition: background 0.3s;
+    }
+    .exp-item:hover { background: var(--gold-dim); }
+    .exp-icon { font-size: 1.8rem; flex-shrink: 0; margin-top: 0.2rem; }
+    .exp-item h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.25rem;
+      color: var(--cream); margin-bottom: 0.4rem;
+    }
+    .exp-item p { font-size: 0.84rem; color: var(--muted); line-height: 1.7; }
+
+    /* ── TESTIMONIAL BANNER ── */
+    .testi-banner {
+      background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      padding: 6rem 4rem; text-align: center;
+    }
+    .testi-quote {
+      font-family: 'Cormorant Garamond', serif; font-size: clamp(1.5rem,3vw,2.2rem);
+      font-style: italic; color: var(--cream); max-width: 800px; margin: 0 auto 1.5rem;
+      line-height: 1.55;
+    }
+    .testi-attr { font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); }
+
+    /* ── CTA ── */
+    .cta-section { padding: 8rem 4rem; text-align: center; }
+    .cta-inner { max-width: 600px; margin: 0 auto; }
+    .cta-inner .section-title { text-align: center; margin-bottom: 0; }
+    .cta-inner .divider { margin: 1.6rem auto; }
+    .cta-inner p { color: var(--muted); font-size: 0.92rem; line-height: 1.8; margin-bottom: 2.5rem; }
+    .cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    @media(max-width:900px){
+      .intro-strip { grid-template-columns: 1fr; }
+      .intro-block { border-right: none; border-bottom: 1px solid var(--border); }
+      .intro-block:last-child { border-bottom: none; }
+      .story-section { grid-template-columns: 1fr; padding: 5rem 2rem; gap: 3rem; }
+      .story-visual { height: 320px; }
+      .sig-grid { grid-template-columns: 1fr; }
+      .exp-grid { grid-template-columns: 1fr; }
+      .signature-section, .exp-section, .cta-section { padding: 5rem 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="home.html" class="nav-logo">Ember <span>&</span> Oak</a>
+  <ul class="nav-links">
+    <li><a href="home.html" class="active">Home</a></li>
+    <li><a href="menu.html">Menu</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="reservations.html">Reservations</a></li>
+  </ul>
+  <a href="reservations.html" class="nav-cta">Reserve a Table</a>
+  <button class="hamburger" onclick="toggleMobile()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE NAV -->
+<div id="mobile-nav">
+  <a href="home.html" class="active" onclick="closeMobile()">Home</a>
+  <a href="menu.html" onclick="closeMobile()">Menu</a>
+  <a href="about.html" onclick="closeMobile()">About</a>
+  <a href="gallery.html" onclick="closeMobile()">Gallery</a>
+  <a href="reservations.html" onclick="closeMobile()">Reservations</a>
+  <a href="reservations.html" class="nav-cta" onclick="closeMobile()">Reserve a Table</a>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-vert-line"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Est. 2009 &nbsp;·&nbsp; Hyderabad &nbsp;·&nbsp; Fine Dining</p>
+    <h1 class="hero-title">Ember<em>& Oak</em></h1>
+    <div class="hero-rule"></div>
+    <p class="hero-sub">Where live fire meets forest — an intimate celebration of seasonal flavour, craft, and unhurried moments.</p>
+    <div class="hero-btns">
+      <a href="menu.html" class="btn-primary">Explore Menu</a>
+      <a href="reservations.html" class="btn-outline">Reserve a Table</a>
+    </div>
+  </div>
+  <div class="hero-scroll">Scroll</div>
+</section>
+
+<!-- INTRO STRIP -->
+<div class="intro-strip">
+  <div class="intro-block reveal"><div class="intro-num">15+</div><p>Years of Fine Dining</p></div>
+  <div class="intro-block reveal"><div class="intro-num">300+</div><p>Wines in Our Cellar</p></div>
+  <div class="intro-block reveal"><div class="intro-num">100%</div><p>Locally Sourced</p></div>
+</div>
+
+<!-- STORY -->
+<div class="story-section">
+  <div class="story-visual reveal">
+    <div class="story-box story-box-main">🔥</div>
+    <div class="story-box story-box-accent">🌿</div>
+    <div class="story-badge"><strong>15</strong>Years</div>
+  </div>
+  <div class="story-text reveal">
+    <p class="section-label">Our Story</p>
+    <h2 class="section-title">Fire, <em>Craft</em>,<br>and Devotion</h2>
+    <div class="divider"></div>
+    <p>Ember & Oak was born from a single belief: that the oldest cooking method — open fire — produces the most extraordinary food. Our kitchen is built around two live wood-burning hearths that run from morning until last orders.</p>
+    <p>Every plate reflects our obsession with the seasons. We source from farms within 100 miles, adjusting our menu weekly as the land dictates.</p>
+    <a href="about.html" class="btn-gold-outline" style="margin-top:1.5rem">Our Story</a>
+  </div>
+</div>
+
+<!-- SIGNATURE -->
+<section class="signature-section">
+  <div class="signature-inner">
+    <div class="sig-header">
+      <div>
+        <p class="section-label">Signature Dishes</p>
+        <h2 class="section-title">Icons <em>of</em> the Kitchen</h2>
+      </div>
+      <a href="menu.html" class="btn-gold-outline">Full Menu</a>
+    </div>
+    <div class="sig-grid">
+      <div class="sig-card reveal">
+        <div class="sig-num">01</div>
+        <h3>45-Day Dry-Aged Ribeye</h3>
+        <p>Bone marrow butter, roasted shallot, hand-cut chips, béarnaise sauce</p>
+        <span class="sig-tag">Chef's Signature</span>
+      </div>
+      <div class="sig-card reveal">
+        <div class="sig-num">02</div>
+        <h3>Fire-Roasted Cauliflower</h3>
+        <p>Romesco, smoked almonds, raisin purée, herb gremolata — our finest vegan dish</p>
+        <span class="sig-tag">Vegan · Seasonal</span>
+      </div>
+      <div class="sig-card reveal">
+        <div class="sig-num">03</div>
+        <h3>Valrhona Chocolate Fondant</h3>
+        <p>Salted caramel core, vanilla bean ice cream, handmade tuile, gold dust</p>
+        <span class="sig-tag">Dessert</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="exp-section">
+  <p class="section-label reveal">The Experience</p>
+  <h2 class="section-title reveal">More Than <em>a Meal</em></h2>
+  <div class="exp-grid">
+    <div class="exp-item reveal">
+      <span class="exp-icon">🔥</span>
+      <div><h3>Open Fire Cooking</h3><p>Every dish shaped by live wood fire — depth, smoke, and irreplicable character.</p></div>
+    </div>
+    <div class="exp-item reveal">
+      <span class="exp-icon">🌿</span>
+      <div><h3>Farm to Table</h3><p>We partner with local farms within 100 miles. Our menu rotates weekly with the seasons.</p></div>
+    </div>
+    <div class="exp-item reveal">
+      <span class="exp-icon">🍷</span>
+      <div><h3>Curated Wine Cellar</h3><p>300+ labels from small-batch producers, hand-selected by our in-house sommelier.</p></div>
+    </div>
+    <div class="exp-item reveal">
+      <span class="exp-icon">🕯️</span>
+      <div><h3>Private Dining</h3><p>Our oak-panelled private room seats up to 20 — perfect for celebrations and proposals.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIAL BANNER -->
+<div class="testi-banner reveal">
+  <p class="testi-quote">"The dry-aged ribeye was the finest piece of beef I've had in a decade. The fire-kissed char, the bone marrow butter — absolutely transcendent."</p>
+  <p class="testi-attr">— Arjun Mehta, Mumbai &nbsp;·&nbsp; ★★★★★</p>
+</div>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner reveal">
+    <p class="section-label">Reservations</p>
+    <h2 class="section-title">Secure Your <em>Table</em></h2>
+    <div class="divider center"></div>
+    <p>We recommend booking at least 48 hours in advance. For parties of 8 or more, please call us directly.</p>
+    <div class="cta-btns">
+      <a href="reservations.html" class="btn-primary">Reserve Now</a>
+      <a href="menu.html" class="btn-outline">View Menu</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="home.html" class="nav-logo">Ember <span>&</span> Oak</a>
+      <p>A celebration of fire, craft, and seasonal abundance. We believe dining is one of life's most profound pleasures.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="home.html">Home</a></li>
+        <li><a href="menu.html">Menu</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="reservations.html">Reservations</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Dining</h4>
+      <ul>
+        <li><a href="#">Tasting Menu</a></li>
+        <li><a href="#">Private Events</a></li>
+        <li><a href="#">Wine Pairings</a></li>
+        <li><a href="#">Gift Vouchers</a></li>
+        <li><a href="#">Chef's Table</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="#">+91 40 2345 6789</a></li>
+        <li><a href="#">hello@emberandoak.in</a></li>
+        <li><a href="#">12 Jubilee Hills Road</a></li>
+        <li><a href="#">Hyderabad, TS 500033</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Ember & Oak. All rights reserved.</p>
+    <div class="social-links">
+      <a href="#">Instagram</a>
+      <a href="#">Facebook</a>
+      <a href="#">Zomato</a>
+    </div>
+  </div>
+</footer>
+
+<script src="shared.js"></script>
+</body>
+</html>
