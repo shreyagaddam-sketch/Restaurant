@@ -1,1 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About Us — Ember & Oak</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <style>
+    .about-wrapper { max-width: 1200px; margin: 0 auto; padding: 6rem 4rem 8rem; }
 
+    /* MISSION */
+    .mission { display: grid; grid-template-columns: 1fr 1.2fr; gap: 6rem; align-items: start; margin-bottom: 8rem; }
+    .mission-visual {
+      position: sticky; top: 120px;
+      display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 240px 240px; gap: 8px;
+    }
+    .mv-box {
+      background: var(--surface2); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
+      transition: background 0.3s;
+    }
+    .mv-box:hover { background: var(--gold-dim); }
+    .mv-box.span2 { grid-column: 1/-1; }
+    .mission-text p { font-size: 0.95rem; color: var(--muted); line-height: 1.95; margin-bottom: 1.2rem; }
+    .mission-pull {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-style: italic;
+      color: var(--cream); border-left: 2px solid var(--gold);
+      padding-left: 1.8rem; margin: 2.5rem 0; line-height: 1.55;
+    }
+
+    /* VALUES */
+    .values-section { margin-bottom: 8rem; }
+    .values-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5px; margin-top: 3rem; }
+    .value-card {
+      background: var(--surface); padding: 3rem 2.5rem; border: 1px solid var(--border);
+      position: relative; overflow: hidden; transition: all 0.3s;
+    }
+    .value-card::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 2px; height: 0;
+      background: var(--gold); transition: height 0.5s;
+    }
+    .value-card:hover { background: var(--gold-dim); }
+    .value-card:hover::before { height: 100%; }
+    .value-icon { font-size: 2rem; margin-bottom: 1.5rem; display: block; }
+    .value-card h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.4rem;
+      color: var(--cream); margin-bottom: 0.6rem;
+    }
+    .value-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.75; }
+
+    /* TEAM */
+    .team-section { margin-bottom: 8rem; }
+    .team-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2rem; margin-top: 3rem; }
+    .team-card { text-align: center; }
+    .team-avatar {
+      width: 100%; aspect-ratio: 1; background: var(--surface2);
+      border: 1px solid var(--border); margin-bottom: 1.5rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 4rem; transition: background 0.3s;
+    }
+    .team-card:hover .team-avatar { background: var(--gold-dim); }
+    .team-card h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--cream);
+      margin-bottom: 0.25rem;
+    }
+    .team-role { font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.8rem; }
+    .team-card p { font-size: 0.83rem; color: var(--muted); line-height: 1.7; }
+
+    /* TIMELINE */
+    .timeline-section { margin-bottom: 8rem; }
+    .timeline { position: relative; margin-top: 3rem; padding-left: 2rem; }
+    .timeline::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 1px; background: linear-gradient(to bottom, var(--gold), transparent);
+      opacity: 0.4;
+    }
+    .tl-item { padding: 0 0 3rem 3rem; position: relative; }
+    .tl-item::before {
+      content: ''; position: absolute; left: -4px; top: 6px;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--gold); border: 2px solid var(--bg);
+    }
+    .tl-year {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.6rem;
+      color: var(--gold); line-height: 1; margin-bottom: 0.4rem;
+    }
+    .tl-item h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; color: var(--cream); margin-bottom: 0.4rem;
+    }
+    .tl-item p { font-size: 0.84rem; color: var(--muted); line-height: 1.7; max-width: 560px; }
+
+    /* AWARDS */
+    .awards-section {
+      background: var(--surface); border: 1px solid var(--border); padding: 4rem;
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 0; margin-bottom: 0;
+    }
+    .award-block {
+      padding: 2.5rem 2rem; text-align: center; border-right: 1px solid var(--border);
+    }
+    .award-block:last-child { border-right: none; }
+    .award-icon { font-size: 2rem; margin-bottom: 1rem; }
+    .award-block h4 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--cream); margin-bottom: 0.3rem;
+    }
+    .award-block p { font-size: 0.75rem; color: var(--muted); }
+
+    @media(max-width:900px){
+      .about-wrapper { padding: 4rem 2rem 6rem; }
+      .mission { grid-template-columns: 1fr; gap: 3rem; }
+      .mission-visual { position: static; grid-template-rows: 200px 200px; }
+      .values-grid { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr 1fr; }
+      .awards-section { grid-template-columns: 1fr 1fr; }
+      .award-block:nth-child(2) { border-right: none; }
+      .award-block:nth-child(1), .award-block:nth-child(2) { border-bottom: 1px solid var(--border); }
+    }
+    @media(max-width:600px){
+      .team-grid { grid-template-columns: 1fr; }
+      .awards-section { grid-template-columns: 1fr; }
+      .award-block { border-right: none; border-bottom: 1px solid var(--border); }
+      .award-block:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav id="navbar">
+  <a href="home.html" class="nav-logo">Ember <span>&</span> Oak</a>
+  <ul class="nav-links">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="menu.html">Menu</a></li>
+    <li><a href="about.html" class="active">About</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="reservations.html">Reservations</a></li>
+  </ul>
+  <a href="reservations.html" class="nav-cta">Reserve a Table</a>
+  <button class="hamburger" onclick="toggleMobile()" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div id="mobile-nav">
+  <a href="home.html" onclick="closeMobile()">Home</a>
+  <a href="menu.html" onclick="closeMobile()">Menu</a>
+  <a href="about.html" class="active" onclick="closeMobile()">About</a>
+  <a href="gallery.html" onclick="closeMobile()">Gallery</a>
+  <a href="reservations.html" onclick="closeMobile()">Reservations</a>
+  <a href="reservations.html" class="nav-cta" onclick="closeMobile()">Reserve a Table</a>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-bg"></div>
+  <div class="page-hero-line"></div>
+  <div class="page-hero-content">
+    <p class="page-hero-label">Our Story</p>
+    <h1 class="page-hero-title">About <em>Us</em></h1>
+    <p class="page-hero-desc">Fifteen years of fire, friendship, and flavour — built slowly and with intention in the heart of Hyderabad.</p>
+  </div>
+</div>
+
+<div class="about-wrapper">
+
+  <!-- MISSION -->
+  <div class="mission">
+    <div class="mission-visual reveal">
+      <div class="mv-box span2">🔥</div>
+      <div class="mv-box">🌿</div>
+      <div class="mv-box">🍷</div>
+    </div>
+    <div class="mission-text reveal">
+      <p class="section-label">Who We Are</p>
+      <h2 class="section-title">Born from <em>Fire</em>,<br>Grown by Craft</h2>
+      <div class="divider"></div>
+      <p>Ember & Oak opened in 2009 with a single hearth, four tables, and a belief that the oldest cooking method — open fire — produces the most extraordinary food. Fifteen years later, that belief hasn't changed. The hearths have grown, the tables have multiplied, but the philosophy remains unchanged.</p>
+      <p>We are first and foremost a kitchen. Every decision we make — from the farms we source, to the wood we burn, to the wines we cellar — is made in service of what ends up on your plate.</p>
+      <div class="mission-pull">"The best meal is one where the ingredients are treated with absolute honesty and nothing is hidden."</div>
+      <p>Our menus rotate weekly, sometimes daily, depending on what the farms and the season provide. We don't force a dish onto a menu because it's a bestseller; we let the season dictate the kitchen.</p>
+      <a href="reservations.html" class="btn-primary" style="margin-top:1.5rem">Reserve a Table</a>
+    </div>
+  </div>
+
+  <!-- VALUES -->
+  <div class="values-section">
+    <p class="section-label reveal">What We Believe</p>
+    <h2 class="section-title reveal">Our <em>Values</em></h2>
+    <div class="values-grid">
+      <div class="value-card reveal">
+        <span class="value-icon">🌱</span>
+        <h3>Honest Sourcing</h3>
+        <p>We partner only with farms we visit personally. Every ingredient on our menu has a named origin. We believe transparency is respect — for the farmer, the animal, the land.</p>
+      </div>
+      <div class="value-card reveal">
+        <span class="value-icon">🔥</span>
+        <h3>Mastery of Fire</h3>
+        <p>Our chefs train for months on our live-fire hearths before ever cooking for a guest. Fire is not a gimmick — it is our primary tool and the soul of every dish we produce.</p>
+      </div>
+      <div class="value-card reveal">
+        <span class="value-icon">♻️</span>
+        <h3>Zero Waste Kitchen</h3>
+        <p>We compost, preserve, ferment, and find uses for every scrap. Our stocks run for 24 hours; our bread is made from yesterday's grains. Waste is failure.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEAM -->
+  <div class="team-section">
+    <p class="section-label reveal">The People</p>
+    <h2 class="section-title reveal">Meet Our <em>Team</em></h2>
+    <div class="team-grid">
+      <div class="team-card reveal">
+        <div class="team-avatar">👨‍🍳</div>
+        <h3>Aryan Kapoor</h3>
+        <p class="team-role">Head Chef & Co-Founder</p>
+        <p>Trained under two Michelin-starred chefs in London and Lyon. Returned to India to build a kitchen rooted in local ingredients and open-fire technique.</p>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-avatar">👩‍🍳</div>
+        <h3>Meera Pillai</h3>
+        <p class="team-role">Pastry Chef</p>
+        <p>A graduate of Le Cordon Bleu Paris, Meera has led our pastry kitchen since 2015. Her desserts balance technical precision with unexpected warmth.</p>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-avatar">🍷</div>
+        <h3>Dev Sharma</h3>
+        <p class="team-role">Head Sommelier</p>
+        <p>Certified WSET Level 4. Dev has built our cellar from scratch, with a focus on small-batch producers from Old World and emerging Indian appellations.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="timeline-section">
+    <p class="section-label reveal">Our Journey</p>
+    <h2 class="section-title reveal">15 Years, One <em>Vision</em></h2>
+    <div class="timeline">
+      <div class="tl-item reveal">
+        <div class="tl-year">2009</div>
+        <h3>The First Fire</h3>
+        <p>Ember & Oak opens with a single hearth, four tables, and a six-item menu. We are fully booked within a week of opening.</p>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-year">2012</div>
+        <h3>The Wine Cellar</h3>
+        <p>Dev Sharma joins as sommelier. We begin building our cellar and introduce our first wine pairing menu — a first in Hyderabad at the time.</p>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-year">2015</div>
+        <h3>The Pastry Kitchen</h3>
+        <p>Meera Pillai joins from Paris. We build a dedicated pastry kitchen, introducing our now-famous Valrhona fondant and seasonal tart tatin.</p>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-year">2018</div>
+        <h3>Private Dining Room</h3>
+        <p>We expand into a neighbouring space, creating our oak-panelled private dining room. It becomes the go-to venue for private celebrations in the city.</p>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-year">2021</div>
+        <h3>Tasting Menu Launch</h3>
+        <p>We introduce our seven-course tasting menu — our most personal expression yet. It sells out every weekend within a month of launch.</p>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-year">2024</div>
+        <h3>Farm Partnership</h3>
+        <p>We formalise partnerships with 12 local farms and establish our on-site preservation programme — fermenting, pickling and curing through the seasons.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- AWARDS -->
+  <div class="awards-section reveal">
+    <div class="award-block">
+      <div class="award-icon">🏆</div>
+      <h4>Best Fine Dining</h4>
+      <p>Times Food Awards 2023 & 2024</p>
+    </div>
+    <div class="award-block">
+      <div class="award-icon">⭐</div>
+      <h4>Top Restaurant</h4>
+      <p>Condé Nast Traveller India 2022</p>
+    </div>
+    <div class="award-block">
+      <div class="award-icon">🍷</div>
+      <h4>Best Wine Programme</h4>
+      <p>Wine & Dine India 2023</p>
+    </div>
+    <div class="award-block">
+      <div class="award-icon">🌿</div>
+      <h4>Sustainability Award</h4>
+      <p>India Restaurant Awards 2024</p>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand"><a href="home.html" class="nav-logo">Ember <span>&</span> Oak</a><p>A celebration of fire, craft, and seasonal abundance.</p></div>
+    <div class="footer-col"><h4>Navigate</h4><ul><li><a href="home.html">Home</a></li><li><a href="menu.html">Menu</a></li><li><a href="about.html">About Us</a></li><li><a href="gallery.html">Gallery</a></li><li><a href="reservations.html">Reservations</a></li></ul></div>
+    <div class="footer-col"><h4>Dining</h4><ul><li><a href="#">Tasting Menu</a></li><li><a href="#">Private Events</a></li><li><a href="#">Wine Pairings</a></li><li><a href="#">Gift Vouchers</a></li></ul></div>
+    <div class="footer-col"><h4>Contact</h4><ul><li><a href="#">+91 40 2345 6789</a></li><li><a href="#">hello@emberandoak.in</a></li><li><a href="#">12 Jubilee Hills Road, Hyderabad</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Ember & Oak. All rights reserved.</p>
+    <div class="social-links"><a href="#">Instagram</a><a href="#">Facebook</a><a href="#">Zomato</a></div>
+  </div>
+</footer>
+
+<script src="shared.js"></script>
+</body>
+</html>
