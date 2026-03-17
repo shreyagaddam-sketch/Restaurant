@@ -1,1 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gallery — Ember & Oak</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <style>
+    .gallery-wrapper { max-width: 1400px; margin: 0 auto; padding: 4rem 4rem 8rem; }
 
+    /* Filter bar */
+    .filter-bar {
+      display: flex; gap: 0; margin-bottom: 3rem;
+      border: 1px solid var(--border); width: fit-content;
+    }
+    .filter-btn {
+      background: none; border: none; border-right: 1px solid var(--border);
+      padding: 0.85rem 1.6rem; font-family: 'Jost', sans-serif;
+      font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--muted); cursor: pointer; transition: all 0.25s; white-space: nowrap;
+    }
+    .filter-btn:last-child { border-right: none; }
+    .filter-btn:hover { color: var(--cream); background: var(--gold-dim); }
+    .filter-btn.active { color: var(--gold); background: var(--gold-dim); }
+
+    /* Masonry grid */
+    .gallery-masonry {
+      columns: 3; column-gap: 12px;
+    }
+    .g-item {
+      break-inside: avoid; margin-bottom: 12px;
+      position: relative; overflow: hidden; cursor: pointer;
+      background: var(--surface2); border: 1px solid var(--border);
+      transition: transform 0.35s;
+    }
+    .g-item:hover { transform: scale(1.01); z-index: 2; }
+    .g-placeholder {
+      width: 100%; display: flex; align-items: center; justify-content: center;
+      font-size: 3.5rem; transition: transform 0.5s; background: var(--surface2);
+    }
+    .g-item:hover .g-placeholder { transform: scale(1.05); }
+    .g-h1 { height: 320px; }
+    .g-h2 { height: 240px; }
+    .g-h3 { height: 400px; }
+    .g-h4 { height: 200px; }
+
+    .g1 { background: linear-gradient(135deg,#2a1a0e,#4a2c14); }
+    .g2 { background: linear-gradient(135deg,#1a0e0e,#3a1a14); }
+    .g3 { background: linear-gradient(135deg,#0e1a0e,#1a3a1a); }
+    .g4 { background: linear-gradient(135deg,#1a1a0e,#2a2a14); }
+    .g5 { background: linear-gradient(135deg,#0e0e1a,#141433); }
+    .g6 { background: linear-gradient(135deg,#1a0e1a,#321432); }
+    .g7 { background: linear-gradient(135deg,#0e1a1a,#143232); }
+    .g8 { background: linear-gradient(135deg,#1e140a,#3a2a14); }
+    .g9 { background: linear-gradient(135deg,#0a1410,#182a20); }
+    .g10 { background: linear-gradient(135deg,#1a0a0e,#34141c); }
+    .g11 { background: linear-gradient(135deg,#141414,#282828); }
+    .g12 { background: linear-gradient(135deg,#100e14,#201c28); }
+
+    .g-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(13,11,8,0.85) 0%, transparent 60%);
+      display: flex; flex-direction: column; justify-content: flex-end; padding: 1.5rem;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .g-item:hover .g-overlay { opacity: 1; }
+    .g-overlay h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.2rem;
+      color: var(--cream); margin-bottom: 0.2rem;
+    }
+    .g-overlay span { font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
+
+    /* hidden filter items */
+    .g-item.hidden { display: none; }
+
+    /* Lightbox */
+    #lightbox {
+      position: fixed; inset: 0; background: rgba(5,4,3,0.95);
+      z-index: 500; display: none; align-items: center; justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+    #lightbox.open { display: flex; }
+    .lb-inner { position: relative; max-width: 90vw; max-height: 90vh; }
+    .lb-content {
+      background: var(--surface2); border: 1px solid var(--border);
+      width: 700px; max-width: 90vw; height: 500px; max-height: 70vh;
+      display: flex; align-items: center; justify-content: center; font-size: 6rem;
+    }
+    .lb-caption { padding: 1.5rem 0 0; }
+    .lb-caption h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--cream);
+    }
+    .lb-caption p { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; }
+    .lb-close {
+      position: absolute; top: -2.5rem; right: 0;
+      background: none; border: none; color: var(--muted);
+      font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+      cursor: pointer; transition: color 0.2s;
+    }
+    .lb-close:hover { color: var(--gold); }
+    .lb-nav {
+      display: flex; gap: 1rem; margin-top: 1.5rem;
+    }
+    .lb-nav button {
+      background: none; border: 1px solid var(--border);
+      color: var(--muted); padding: 0.5rem 1.2rem;
+      font-family: 'Jost', sans-serif; font-size: 0.72rem; letter-spacing: 0.15em;
+      text-transform: uppercase; cursor: pointer; transition: all 0.25s;
+    }
+    .lb-nav button:hover { border-color: var(--gold); color: var(--gold); }
+
+    @media(max-width:900px){
+      .gallery-wrapper { padding: 3rem 2rem 6rem; }
+      .gallery-masonry { columns: 2; }
+      .filter-bar { flex-wrap: wrap; width: 100%; }
+      .filter-btn { flex: 1; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    }
+    @media(max-width:600px){
+      .gallery-masonry { columns: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<nav id="navbar">
+  <a href="home.html" class="nav-logo">Ember <span>&</span> Oak</a>
+  <ul class="nav-links">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="menu.html">Menu</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="gallery.html" class="active">Gallery</a></li>
+    <li><a href="reservations.html">Reservations</a></li>
+  </ul>
+  <a href="reservations.html" class="nav-cta">Reserve a Table</a>
+  <button class="hamburger" onclick="toggleMobile()" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div id="mobile-nav">
+  <a href="home.html" onclick="closeMobile()">Home</a>
+  <a href="menu.html" onclick="closeMobile()">Menu</a>
+  <a href="about.html" onclick="closeMobile()">About</a>
+  <a href="gallery.html" class="active" onclick="closeMobile()">Gallery</a>
+  <a href="reservations.html" onclick="closeMobile()">Reservations</a>
+  <a href="reservations.html" class="nav-cta" onclick="closeMobile()">Reserve a Table</a>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-bg"></div>
+  <div class="page-hero-line"></div>
+  <div class="page-hero-content">
+    <p class="page-hero-label">Ember & Oak</p>
+    <h1 class="page-hero-title">Our <em>Gallery</em></h1>
+    <p class="page-hero-desc">A visual record of fire, craft, and moments shared — from the kitchen to the table.</p>
+  </div>
+</div>
+
+<div class="gallery-wrapper">
+  <!-- Filter -->
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterGallery('all',this)">All</button>
+    <button class="filter-btn" onclick="filterGallery('food',this)">Food</button>
+    <button class="filter-btn" onclick="filterGallery('interior',this)">Interior</button>
+    <button class="filter-btn" onclick="filterGallery('kitchen',this)">Kitchen</button>
+    <button class="filter-btn" onclick="filterGallery('events',this)">Events</button>
+  </div>
+
+  <!-- Grid -->
+  <div class="gallery-masonry" id="gallery-grid">
+    <div class="g-item g-h3 reveal" data-cat="food" onclick="openLightbox('🥩','Dry-Aged Ribeye','45 days of patience. Bone marrow butter, béarnaise, hand-cut chips.')">
+      <div class="g-placeholder g1">🥩</div>
+      <div class="g-overlay"><h3>Dry-Aged Ribeye</h3><span>Food · Signature</span></div>
+    </div>
+    <div class="g-item g-h2 reveal" data-cat="interior" onclick="openLightbox('🕯️','The Dining Room','Candlelit evenings in our main dining room, dressed in oak and warm light.')">
+      <div class="g-placeholder g2">🕯️</div>
+      <div class="g-overlay"><h3>The Dining Room</h3><span>Interior</span></div>
+    </div>
+    <div class="g-item g-h2 reveal" data-cat="kitchen" onclick="openLightbox('🔥','The Hearth','Our primary live-fire hearth, fuelled by oak and cherry wood.')">
+      <div class="g-placeholder g3">🔥</div>
+      <div class="g-overlay"><h3>The Hearth</h3><span>Kitchen</span></div>
+    </div>
+    <div class="g-item g-h1 reveal" data-cat="food" onclick="openLightbox('🐚','Seared Scallop','Cauliflower purée, smoked roe butter, dill oil.')">
+      <div class="g-placeholder g4">🐚</div>
+      <div class="g-overlay"><h3>Seared Scallop</h3><span>Food · Starter</span></div>
+    </div>
+    <div class="g-item g-h3 reveal" data-cat="interior" onclick="openLightbox('🪵','Private Dining Room','Our oak-panelled private room, available for intimate celebrations.')">
+      <div class="g-placeholder g5">🪵</div>
+      <div class="g-overlay"><h3>Private Dining Room</h3><span>Interior</span></div>
+    </div>
+    <div class="g-item g-h2 reveal" data-cat="events" onclick="openLightbox('🎂','Private Celebration','Bespoke celebration setups — from proposals to milestone dinners.')">
+      <div class="g-placeholder g6">🎂</div>
+      <div class="g-overlay"><h3>Private Celebration</h3><span>Events</span></div>
+    </div>
+    <div class="g-item g-h2 reveal" data-cat="food" onclick="openLightbox('🍫','Valrhona Fondant','Salted caramel core, vanilla bean ice cream, tuile.')">
+      <div class="g-placeholder g7">🍫</div>
+      <div class="g-overlay"><h3>Valrhona Fondant</h3><span>Food · Dessert</span></div>
+    </div>
+    <div class="g-item g-h1 reveal" data-cat="kitchen" onclick="openLightbox('🧑‍🍳','Kitchen Brigade','Our team in action — mise en place at its finest.')">
+      <div class="g-placeholder g8">🧑‍🍳</div>
+      <div class="g-overlay"><h3>Kitchen Brigade</h3><span>Kitchen</span></div>
+    </div>
+    <div class="g-item g-h4 reveal" data-cat="interior" onclick="openLightbox('🍾','The Wine Cellar','300+ labels, hand-selected by our sommelier.')">
+      <div class="g-placeholder g9">🍾</div>
+      <div class="g-overlay"><h3>The Wine Cellar</h3><span>Interior</span></div>
+    </div>
+    <div class="g-item g-h2 reveal" data-cat="food" onclick="openLightbox('🥗','Burrata & Tomato','Heritage tomatoes, basil oil, aged balsamic.')">
+      <div class="g-placeholder g10">🥗</div>
+      <div class="g-overlay"><h3>Burrata & Tomato</h3><span>Food · Starter</span></div>
+    </div>
+    <div class="g-item g-h3 reveal" data-cat="events" onclick="openLightbox('🥂','Wine Pairing Evening','Seasonal wine pairing dinners held the first Friday of every month.')">
+      <div class="g-placeholder g11">🥂</div>
+      <div class="g-overlay"><h3>Wine Pairing Evening</h3><span>Events</span></div>
+    </div>
+    <div class="g-item g-h2 reveal" data-cat="kitchen" onclick="openLightbox('🌿','Farm to Table','Fresh produce arriving from our partner farms each morning.')">
+      <div class="g-placeholder g12">🌿</div>
+      <div class="g-overlay"><h3>Farm to Table</h3><span>Kitchen · Sourcing</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="closeLightbox(event)">
+  <div class="lb-inner">
+    <button class="lb-close" onclick="closeLightboxBtn()">✕ Close</button>
+    <div class="lb-content" id="lb-emoji">🥩</div>
+    <div class="lb-caption">
+      <h3 id="lb-title">Title</h3>
+      <p id="lb-desc">Description</p>
+    </div>
+    <div class="lb-nav">
+      <button onclick="lbPrev()">← Previous</button>
+      <button onclick="lbNext()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand"><a href="home.html" class="nav-logo">Ember <span>&</span> Oak</a><p>A celebration of fire, craft, and seasonal abundance.</p></div>
+    <div class="footer-col"><h4>Navigate</h4><ul><li><a href="home.html">Home</a></li><li><a href="menu.html">Menu</a></li><li><a href="about.html">About Us</a></li><li><a href="gallery.html">Gallery</a></li><li><a href="reservations.html">Reservations</a></li></ul></div>
+    <div class="footer-col"><h4>Dining</h4><ul><li><a href="#">Tasting Menu</a></li><li><a href="#">Private Events</a></li><li><a href="#">Wine Pairings</a></li><li><a href="#">Gift Vouchers</a></li></ul></div>
+    <div class="footer-col"><h4>Contact</h4><ul><li><a href="#">+91 40 2345 6789</a></li><li><a href="#">hello@emberandoak.in</a></li><li><a href="#">12 Jubilee Hills Road, Hyderabad</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Ember & Oak. All rights reserved.</p>
+    <div class="social-links"><a href="#">Instagram</a><a href="#">Facebook</a><a href="#">Zomato</a></div>
+  </div>
+</footer>
+
+<script src="shared.js"></script>
+<script>
+  let currentLb = 0;
+  const items = document.querySelectorAll('.g-item');
+  const lbEmoji = document.getElementById('lb-emoji');
+  const lbTitle = document.getElementById('lb-title');
+  const lbDesc  = document.getElementById('lb-desc');
+
+  function openLightbox(emoji, title, desc) {
+    lbEmoji.textContent = emoji;
+    lbTitle.textContent = title;
+    lbDesc.textContent  = desc;
+    const visItems = [...items].filter(i => !i.classList.contains('hidden'));
+    currentLb = visItems.findIndex(i => i.querySelector('.g-overlay h3').textContent === title);
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox(e) {
+    if (e.target === document.getElementById('lightbox')) closeLightboxBtn();
+  }
+  function closeLightboxBtn() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function lbNext() {
+    const visItems = [...items].filter(i => !i.classList.contains('hidden'));
+    currentLb = (currentLb + 1) % visItems.length;
+    const el = visItems[currentLb];
+    lbEmoji.textContent = el.querySelector('.g-placeholder').textContent.trim();
+    lbTitle.textContent = el.querySelector('.g-overlay h3').textContent;
+    lbDesc.textContent  = el.dataset.desc || el.querySelector('.g-overlay span').textContent;
+  }
+  function lbPrev() {
+    const visItems = [...items].filter(i => !i.classList.contains('hidden'));
+    currentLb = (currentLb - 1 + visItems.length) % visItems.length;
+    const el = visItems[currentLb];
+    lbEmoji.textContent = el.querySelector('.g-placeholder').textContent.trim();
+    lbTitle.textContent = el.querySelector('.g-overlay h3').textContent;
+    lbDesc.textContent  = el.dataset.desc || el.querySelector('.g-overlay span').textContent;
+  }
+
+  function filterGallery(cat, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    items.forEach(item => {
+      if (cat === 'all' || item.dataset.cat === cat) {
+        item.classList.remove('hidden');
+      } else {
+        item.classList.add('hidden');
+      }
+    });
+  }
+
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('lightbox').classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightboxBtn();
+    if (e.key === 'ArrowRight') lbNext();
+    if (e.key === 'ArrowLeft') lbPrev();
+  });
+</script>
+</body>
+</html>
